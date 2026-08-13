@@ -77,6 +77,22 @@ function extractResources() {
   const allElements = document.querySelectorAll('li.public-section-header, a.resource-link');
   let currentHeader = 'Uncategorized';
 
+  // Helper: get file extension from a URL (e.g., ".pdf", ".pptx")
+  function getExtensionFromUrl(url) {
+    try {
+      const parsed = new URL(url, window.location.href);
+      const path = parsed.pathname;
+      const fileName = path.split('/').pop();
+      if (fileName && fileName.includes('.')) {
+        const ext = fileName.split('.').pop();
+        if (ext && ext.length > 0) {
+          return '.' + ext;
+        }
+      }
+    } catch(e) {}
+    return '';
+  }
+
   allElements.forEach(el => {
     // If it's a section header, update the current folder name
     if (el.matches('li.public-section-header')) {
@@ -111,7 +127,33 @@ function extractResources() {
         const parts = href.split('/');
         filename = parts[parts.length - 1].split('?')[0] || 'file.bin';
       }
+
+      // ---- SMARTER EXTENSION LOGIC ----
+      // 1. Strip any extension from the base filename (title-based)
+      const lastSlashIndex = filename.lastIndexOf('/');
+      const lastDotIndex = filename.lastIndexOf('.');
+      let baseName = filename;
+      let titleExt = '';
       
+      // If the title has an extension, split it off
+      if (lastDotIndex > lastSlashIndex && lastDotIndex < filename.length - 1) {
+        baseName = filename.substring(0, lastDotIndex);
+        titleExt = filename.substring(lastDotIndex); // e.g., ".docx"
+      }
+
+      // 2. Get the extension from the actual URL (most reliable)
+      const urlExt = getExtensionFromUrl(href);
+
+      // 3. Decision: prefer URL extension, fallback to title extension
+      if (urlExt) {
+        filename = baseName + urlExt;   // e.g., "notes" + ".pdf"
+      } else if (titleExt) {
+        filename = baseName + titleExt; // keep the title's extension
+      } else {
+        filename = baseName;            // no extension at all
+      }
+      // ---------------------------------
+
       // Remove illegal filesystem characters
       filename = filename.replace(/[<>:"/\\|?*]/g, '_');
       
