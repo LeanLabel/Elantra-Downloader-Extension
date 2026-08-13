@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Elentra Resource Downloader",
+  "version": "1.1",
+  "description": "Download Elentra files organized by section. Runs in the background.",
+  "permissions": ["activeTab", "downloads", "scripting"],
+  "host_permissions": ["https://webapps.duke-nus.edu.sg/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Download Elentra Files"
+  }
+}
